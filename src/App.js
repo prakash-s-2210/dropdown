@@ -1,23 +1,57 @@
-import logo from './logo.svg';
 import './App.css';
+import React, {useState, useEffect, useRef} from 'react';
+import names from "./names";
+import SelectedName from "./components/SelectedName";
+import Dropdown from "./components/Dropdown";
+
 
 function App() {
+  let nameRef = useRef();
+  const [ selectedNames, setSelectedNames] = useState(names);
+  const [ selectedNamelength, setSelectedNameLength ] = useState(0);
+  const [ isDropdownOpen, setIsDropdownOpen ] = useState(false);
+  function handleDropdown(){
+    setIsDropdownOpen(!isDropdownOpen);
+  }
+  function addNameToBox(id){
+    const updatedNames = selectedNames.map((name) => {
+      if (name.id === id) {
+        return {
+          ...name,
+          selected: !name.selected,
+        };
+      }
+      return name;
+    });
+    setSelectedNames(updatedNames);
+  }
+  useEffect(()=>{
+    let handler = (e) => {
+      if(!nameRef.current.contains(e.target)){
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handler);
+    return() => {
+      document.removeEventListener("mousedown", handler);
+    }
+  })
+  useEffect(()=>{
+    const array = selectedNames.filter((name)=> name.selected);
+    if(array.length > 0){
+      setSelectedNameLength(array.length);
+    }
+    else{
+      setSelectedNameLength(0);
+    }
+  }, [selectedNames])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className='container' ref={nameRef} style={{width: '300px'}}>
+        <SelectedName handleDropdown = {handleDropdown} selectedNamelength = {selectedNamelength} isDropdownOpen = {isDropdownOpen} selectedNames = {selectedNames}/>
+        <Dropdown isDropdownOpen = {isDropdownOpen} selectedNames = {selectedNames} addNameToBox = {addNameToBox}/>
+      </div>
     </div>
   );
 }
